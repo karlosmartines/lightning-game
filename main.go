@@ -2,10 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"text/template"
 
 	"lightning-game/game"
 )
+
+var tpl *template.Template
 
 func main() {
 	http.HandleFunc("/", index)
@@ -13,9 +17,15 @@ func main() {
 	http.HandleFunc("/playeven/", playEven)
 	http.ListenAndServe(":8080", nil)
 }
+func init() {
+	tpl = template.Must(template.ParseGlob("templates/*"))
+}
 
 func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "hello, Karl")
+	err := tpl.ExecuteTemplate(w, "index.html", nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 func playEven(w http.ResponseWriter, r *http.Request) {
 	if game.Play(true) {
