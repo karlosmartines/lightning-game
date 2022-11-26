@@ -13,7 +13,7 @@ var tpl *template.Template
 
 func main() {
 	http.HandleFunc("/", index)
-	http.HandleFunc("/playodd/", playOdd)
+	http.HandleFunc("/play/", play)
 	http.HandleFunc("/playeven/", playEven)
 	http.ListenAndServe(":8080", nil)
 }
@@ -25,6 +25,14 @@ func index(w http.ResponseWriter, r *http.Request) {
 	err := tpl.ExecuteTemplate(w, "index.html", nil)
 	if err != nil {
 		log.Fatalln(err)
+	}
+}
+func play(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("here")
+	if game.Play(true) {
+		fmt.Fprintf(w, "Win!")
+	} else {
+		fmt.Fprintf(w, "Loose!")
 	}
 }
 func playEven(w http.ResponseWriter, r *http.Request) {
