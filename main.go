@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"text/template"
@@ -13,39 +12,42 @@ var tpl *template.Template
 
 func main() {
 	http.HandleFunc("/", index)
-	http.HandleFunc("/play/", play)
-	http.HandleFunc("/playeven/", playEven)
+	http.HandleFunc("/play", play)
+	http.HandleFunc("/login", logIn)
 	http.ListenAndServe(":8080", nil)
 }
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/*"))
 }
-
+func logIn(w http.ResponseWriter, r *http.Request) {
+	welcomeMessage := r.FormValue("email")
+	err := tpl.ExecuteTemplate(w, "index.html", welcomeMessage)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
 func index(w http.ResponseWriter, r *http.Request) {
-	err := tpl.ExecuteTemplate(w, "index.html", nil)
+	err := tpl.ExecuteTemplate(w, "index.html", "")
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 func play(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("here")
-	if game.Play(true) {
-		fmt.Fprintf(w, "Win!")
+	var gameWon bool
+	if r.FormValue("flexRadioDefault") == "playeven" {
+		gameWon = game.Play(true)
 	} else {
-		fmt.Fprintf(w, "Loose!")
+		gameWon = game.Play(false)
+	}
+	if gameWon {
+		displayGameResult(w, "You won!")
+	} else {
+		displayGameResult(w, "You lost!")
 	}
 }
-func playEven(w http.ResponseWriter, r *http.Request) {
-	if game.Play(true) {
-		fmt.Fprintf(w, "Win!")
-	} else {
-		fmt.Fprintf(w, "Loose!")
-	}
-}
-func playOdd(w http.ResponseWriter, r *http.Request) {
-	if game.Play(false) {
-		fmt.Fprintf(w, "Win!")
-	} else {
-		fmt.Fprintf(w, "Loose!")
+func displayGameResult(w http.ResponseWriter, result string) {
+	err := tpl.ExecuteTemplate(w, "index.html", result)
+	if err != nil {
+		log.Fatalln(err)
 	}
 }
