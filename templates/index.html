@@ -38,22 +38,12 @@
 			</div>
 			<button type="submit" class="btn btn-success">Play!</button>
 		</form>
-		<form action="/login" method="post">
-			<div class="mb-3">
-				<label for="exampleInputEmail1" class="form-label"
-					>Log in with your email address:</label
-				>
-				<input
-					type="email"
-					class="form-control"
-					id="exampleInputEmail1"
-					name="email"
-					aria-describedby="emailHelp"
-				/>
-				<div id="emailHelp" class="form-text">
-					We'll never share your email with anyone else.
-				</div>
+		<form action="/login" method="get">
 			<button type="submit" class="btn btn-success">Log in</button>
+			</div>
+		</form>
+		<form action="/signup" method="get">
+			<button type="submit" class="btn btn-success">Sign up</button>
 			</div>
 		</form>
 	</body>
