@@ -7,13 +7,14 @@ import (
 	"text/template"
 
 	uuid "github.com/satori/go.uuid"
+	"golang.org/x/crypto/bcrypt"
 
 	"lightning-game/game"
 )
 
 type user struct {
 	Email    string
-	Password string
+	Password []byte
 }
 
 var tpl *template.Template
@@ -50,7 +51,12 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, c)
 		dbSessions[c.Value] = email
-		u := user{email, p}
+		bs, err := bcrypt.GenerateFromPassword([]byte(p), bcrypt.MinCost)
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+		u := user{email, bs}
 		dbUsers[email] = u
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		fmt.Printf("Email: %s Password: %s Session ID: %s", dbUsers[email].Email, dbUsers[email].Password, c.Value)
@@ -95,7 +101,7 @@ func setCookie(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		un := r.FormValue("email")
 		p := r.FormValue("password")
-		u = user{un, p}
+		u = user{un, []byte(p)}
 		dbSessions[c.Value] = un
 		dbUsers[un] = u
 		fmt.Printf("UN: %s P: %s", un, p)
@@ -129,7 +135,7 @@ func logIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		un := r.FormValue("email")
 		p := r.FormValue("password")
-		u = user{un, p}
+		u = user{un, []byte(p)}
 		dbSessions[c.Value] = un
 		dbUsers[un] = u
 		fmt.Printf("UN: %s P: %s S: %s", un, p, c.Value)
