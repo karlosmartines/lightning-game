@@ -116,29 +116,34 @@ func readCookie(w http.ResponseWriter, r *http.Request) {
 }
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/*"))
+	bs, _ := bcrypt.GenerateFromPassword([]byte("asdf"), bcrypt.MinCost)
+	dbUsers["test@test.com"] = user{"test@test.com", bs}
 }
 func logIn(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("session")
-	if err != nil {
-		sID := uuid.NewV4()
-		c = &http.Cookie{
-			Name:     "session",
-			Value:    sID.String(),
-			HttpOnly: true,
-		}
-		http.SetCookie(w, c)
-	}
-	var u user
-	if un, ok := dbSessions[c.Value]; ok {
-		u = dbUsers[un]
+	if alreadyLoggedIn(r) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 	if r.Method == http.MethodPost {
-		un := r.FormValue("email")
+		email := r.FormValue("email")
 		p := r.FormValue("password")
-		u = user{un, []byte(p)}
-		dbSessions[c.Value] = un
-		dbUsers[un] = u
-		fmt.Printf("UN: %s P: %s S: %s", un, p, c.Value)
+		u, ok := dbUsers[email]
+		if !ok {
+			http.Error(w, "Username and/or password do not match", http.StatusForbidden)
+			return
+		}
+		err := bcrypt.CompareHashAndPassword(u.Password, []byte(p))
+		if err != nil {
+			http.Error(w, "Username and/or password do not match", http.StatusForbidden)
+			return
+		}
+		sID := uuid.NewV4()
+		c := &http.Cookie{
+			Name:  "session",
+			Value: sID.String(),
+		}
+		http.SetCookie(w, c)
+		dbSessions[c.Value] = email
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 	tpl.ExecuteTemplate(w, "login.html", "")
 }
