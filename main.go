@@ -25,11 +25,25 @@ func main() {
 	http.HandleFunc("/", index)
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 	http.HandleFunc("/play", play)
-	http.HandleFunc("/signup", signup)
+	http.HandleFunc("/signup", signUp)
 	http.HandleFunc("/login", logIn)
+	http.HandleFunc("/logout", logOut)
 	http.ListenAndServe(":8080", nil)
 }
-func signup(w http.ResponseWriter, r *http.Request) {
+func logOut(w http.ResponseWriter, r *http.Request) {
+	if alreadyLoggedIn(r) {
+		c, _ := r.Cookie("session")
+		delete(dbSessions, c.Value)
+		c = &http.Cookie{
+			Name:   "session",
+			Value:  "",
+			MaxAge: -1,
+		}
+		http.SetCookie(w, c)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	}
+}
+func signUp(w http.ResponseWriter, r *http.Request) {
 	if alreadyLoggedIn(r) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
