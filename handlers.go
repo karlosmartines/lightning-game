@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -17,11 +16,14 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func game(w http.ResponseWriter, r *http.Request) {
-	err := tpl.ExecuteTemplate(w, "game.html", "")
-	if err != nil {
-		log.Fatalln(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if alreadyLoggedIn(r) {
+		err := tpl.ExecuteTemplate(w, "game.html", "")
+		if err != nil {
+			log.Fatalln(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 func play(w http.ResponseWriter, r *http.Request) {
 	var victory bool
@@ -48,7 +50,8 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		email := r.FormValue("email")
 		p := r.FormValue("password")
 		if _, ok := dbUsers[email]; ok {
-			http.Error(w, "Email is already used", http.StatusForbidden)
+			// http.Error(w, "Email is already used", http.StatusForbidden)
+			tpl.ExecuteTemplate(w, "signup.html", "Email is already used")
 			return
 		}
 		sID := uuid.NewV4()
@@ -65,15 +68,14 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		}
 		u := user{email, bs}
 		dbUsers[email] = u
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		fmt.Printf("Email: %s Password: %s Session ID: %s", dbUsers[email].Email, dbUsers[email].Password, c.Value)
+		http.Redirect(w, r, "/game", http.StatusSeeOther)
 		return
 	}
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
 	if alreadyLoggedIn(r) {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/game", http.StatusSeeOther)
 	}
 	if r.Method == http.MethodPost {
 		email := r.FormValue("email")
