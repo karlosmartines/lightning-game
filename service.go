@@ -16,21 +16,8 @@ func alreadyLoggedIn(r *http.Request) bool {
 	_, ok := dbUsers[email]
 	return ok
 }
-func play(w http.ResponseWriter, r *http.Request) {
-	var victory bool
-	if r.FormValue("flexRadioDefault") == "playeven" {
-		victory = gameWon(true)
-	} else {
-		victory = gameWon(false)
-	}
-	if victory {
-		displayGameResult(w, "You won!")
-	} else {
-		displayGameResult(w, "You lost!")
-	}
-}
 func displayGameResult(w http.ResponseWriter, result string) {
-	err := tpl.ExecuteTemplate(w, "index.html", result)
+	err := tpl.ExecuteTemplate(w, "game.html", result)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -1,53 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
-		<meta charset="utf-8" />
-		<title>Lightning Roulette</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css" /> -->
-		<!-- <script src="main.js"></script> -->
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=, initial-scale=1.0" />
+		<title>Log in</title>
 	</head>
 	<body>
 		<h1>Lightning Roulette</h1>
-		<h2>{{.}}</h2>
-		
-		<form action="/play" method="get">
-			<div class="form-check">
+		<h2>Log in</h2>
+		{{if .}}
+		<p>Username and/or password do not match</p>
+		{{end}}
+		<form action="/login" method="post">
+				<div class="col-auto">
+					<label for="exampleInputEmail1" class="col-form-label">Email address</label>
+				</div>
+			<div class="mb-3">
 				<input
-					class="form-check-input"
-					type="radio"
-					name="bettype"
-					value="playeven"
-					id="flexRadioDefault1"
+					type="email"
+					class="form-control"
+					id="exampleInputEmail1"
+					aria-describedby="emailHelp"
+					name="email"
 				/>
-				<label class="form-check-label" for="flexRadioDefault1">
-					Play even numbers
-				</label>
+				<div id="emailHelp" class="form-text">
+					We'll never share your email with anyone else.
+				</div>
 			</div>
-			<div class="form-check">
-				<input
-					class="form-check-input"
-					type="radio"
-					name="bettype"
-					value="playodd"
-					id="flexRadioDefault1"
-				/>
-				<label class="form-check-label" for="flexRadioDefault1">
-					Play odd numbers
-				</label>
+			<div class="row g-3 align-items-center">
+				<div class="col-auto">
+					<label for="inputPassword6" class="col-form-label">Password</label>
+				</div>
+				<div class="col-auto">
+					<input
+						type="password"
+						id="inputPassword6"
+						class="form-control"
+						aria-describedby="passwordHelpInline"
+						name="password"
+					/>
+				</div>
+				<div class="col-auto">
+					<span id="passwordHelpInline" class="form-text">
+						Must be 8-20 characters long.
+					</span>
+				</div>
 			</div>
-			<button type="submit" class="btn btn-success">Play!</button>
-		</form>
-		<form action="/login" method="get">
-			<button type="submit" class="btn btn-success">Log in</button>
-			</div>
+			<button type="submit" class="btn btn-primary">Log in</button>
 		</form>
 		<form action="/signup" method="get">
 			<button type="submit" class="btn btn-success">Sign up</button>
-			</div>
-		</form>
-		<form action="/logout" method="get">
-			<button type="submit" class="btn btn-success">Log out</output></button>
 			</div>
 		</form>
 	</body>

@@ -16,7 +16,26 @@ func index(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln(err)
 	}
 }
-
+func game(w http.ResponseWriter, r *http.Request) {
+	err := tpl.ExecuteTemplate(w, "game.html", "")
+	if err != nil {
+		log.Fatalln(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+func play(w http.ResponseWriter, r *http.Request) {
+	var victory bool
+	if r.FormValue("flexRadioDefault") == "playeven" {
+		victory = gameWon(true)
+	} else {
+		victory = gameWon(false)
+	}
+	if victory {
+		displayGameResult(w, "You won!")
+	} else {
+		displayGameResult(w, "You lost!")
+	}
+}
 func signup(w http.ResponseWriter, r *http.Request) {
 	if alreadyLoggedIn(r) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -61,12 +80,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 		p := r.FormValue("password")
 		u, ok := dbUsers[email]
 		if !ok {
-			http.Error(w, "Username and/or password do not match", http.StatusForbidden)
+			// http.Error(w, "Username and/or password do not match", http.StatusForbidden)
+			tpl.ExecuteTemplate(w, "index.html", true)
 			return
 		}
 		err := bcrypt.CompareHashAndPassword(u.Password, []byte(p))
 		if err != nil {
-			http.Error(w, "Username and/or password do not match", http.StatusForbidden)
+			// http.Error(w, "Username and/or password do not match", http.StatusForbidden)
+			tpl.ExecuteTemplate(w, "index.html", true)
 			return
 		}
 		sID := uuid.NewV4()
@@ -76,9 +97,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, c)
 		dbSessions[c.Value] = email
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/game", http.StatusSeeOther)
 	}
-	tpl.ExecuteTemplate(w, "login.html", "")
+	tpl.ExecuteTemplate(w, "index.html", "")
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {

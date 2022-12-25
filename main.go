@@ -56,13 +56,16 @@ func setCookie(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("UN: %s P: %s", un, p)
 	}
 }
-func readCookie(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("my-cookie")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+
+/*
+	func readCookie(w http.ResponseWriter, r *http.Request) {
+		c, err := r.Cookie("my-cookie")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		}
+		fmt.Println(c.String())
 	}
-	fmt.Println(c.String())
-}
+*/
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/*"))
 	bs, _ := bcrypt.GenerateFromPassword([]byte("asdf"), bcrypt.MinCost)
