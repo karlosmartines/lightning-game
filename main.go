@@ -2,14 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"text/template"
 
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
-
-	"lightning-game/game"
 )
 
 type user struct {
@@ -22,69 +19,7 @@ var dbUsers = map[string]user{}
 var dbSessions = map[string]string{}
 
 func main() {
-	http.HandleFunc("/", index)
-	http.Handle("/favicon.ico", http.NotFoundHandler())
-	http.HandleFunc("/play", play)
-	http.HandleFunc("/signup", signUp)
-	http.HandleFunc("/login", logIn)
-	http.HandleFunc("/logout", logOut)
-	http.ListenAndServe(":8080", nil)
-}
-func logOut(w http.ResponseWriter, r *http.Request) {
-	if alreadyLoggedIn(r) {
-		c, _ := r.Cookie("session")
-		delete(dbSessions, c.Value)
-		c = &http.Cookie{
-			Name:   "session",
-			Value:  "",
-			MaxAge: -1,
-		}
-		http.SetCookie(w, c)
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-	}
-}
-func signUp(w http.ResponseWriter, r *http.Request) {
-	if alreadyLoggedIn(r) {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-	if r.Method == http.MethodGet {
-		tpl.ExecuteTemplate(w, "signup.html", "")
-	}
-	if r.Method == http.MethodPost {
-		email := r.FormValue("email")
-		p := r.FormValue("password")
-		if _, ok := dbUsers[email]; ok {
-			http.Error(w, "Email is already used", http.StatusForbidden)
-			return
-		}
-		sID := uuid.NewV4()
-		c := &http.Cookie{
-			Name:  "session",
-			Value: sID.String(),
-		}
-		http.SetCookie(w, c)
-		dbSessions[c.Value] = email
-		bs, err := bcrypt.GenerateFromPassword([]byte(p), bcrypt.MinCost)
-		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		u := user{email, bs}
-		dbUsers[email] = u
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		fmt.Printf("Email: %s Password: %s Session ID: %s", dbUsers[email].Email, dbUsers[email].Password, c.Value)
-		return
-	}
-}
-func alreadyLoggedIn(r *http.Request) bool {
-	c, err := r.Cookie("session")
-	if err != nil {
-		return false
-	}
-	email := dbSessions[c.Value]
-	_, ok := dbUsers[email]
-	return ok
+	startMux()
 }
 func getUser(r *http.Request) user {
 	var u user
@@ -132,58 +67,4 @@ func init() {
 	tpl = template.Must(template.ParseGlob("templates/*"))
 	bs, _ := bcrypt.GenerateFromPassword([]byte("asdf"), bcrypt.MinCost)
 	dbUsers["test@test.com"] = user{"test@test.com", bs}
-}
-func logIn(w http.ResponseWriter, r *http.Request) {
-	if alreadyLoggedIn(r) {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
-	if r.Method == http.MethodPost {
-		email := r.FormValue("email")
-		p := r.FormValue("password")
-		u, ok := dbUsers[email]
-		if !ok {
-			http.Error(w, "Username and/or password do not match", http.StatusForbidden)
-			return
-		}
-		err := bcrypt.CompareHashAndPassword(u.Password, []byte(p))
-		if err != nil {
-			http.Error(w, "Username and/or password do not match", http.StatusForbidden)
-			return
-		}
-		sID := uuid.NewV4()
-		c := &http.Cookie{
-			Name:  "session",
-			Value: sID.String(),
-		}
-		http.SetCookie(w, c)
-		dbSessions[c.Value] = email
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
-	tpl.ExecuteTemplate(w, "login.html", "")
-}
-func index(w http.ResponseWriter, r *http.Request) {
-	setCookie(w, r)
-	err := tpl.ExecuteTemplate(w, "index.html", "")
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
-func play(w http.ResponseWriter, r *http.Request) {
-	var gameWon bool
-	if r.FormValue("flexRadioDefault") == "playeven" {
-		gameWon = game.Play(true)
-	} else {
-		gameWon = game.Play(false)
-	}
-	if gameWon {
-		displayGameResult(w, "You won!")
-	} else {
-		displayGameResult(w, "You lost!")
-	}
-}
-func displayGameResult(w http.ResponseWriter, result string) {
-	err := tpl.ExecuteTemplate(w, "index.html", result)
-	if err != nil {
-		log.Fatalln(err)
-	}
 }
