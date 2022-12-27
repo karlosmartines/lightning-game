@@ -16,9 +16,9 @@ func alreadyLoggedIn(r *http.Request) bool {
 	_, ok := dbUsers[s.User]
 	return ok
 }
-func emailExists(e string) bool {
+func usernameExists(e string) bool {
 	for _, u := range dbUsers {
-		if u.Email == e {
+		if u.Username == e {
 			return true
 		}
 	}

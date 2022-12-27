@@ -44,18 +44,18 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		tpl.ExecuteTemplate(w, "signup.html", "")
 	}
 	if r.Method == http.MethodPost {
-		email := r.FormValue("email")
+		un := r.FormValue("username")
 		p, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.MinCost)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if emailExists(email) {
+		if usernameExists(un) {
 			// http.Error(w, "Email is already used", http.StatusForbidden)
-			tpl.ExecuteTemplate(w, "signup.html", "Email is already used")
+			tpl.ExecuteTemplate(w, "signup.html", "Username is already used")
 			return
 		}
-		u := user{"", email, p, 0}
+		u := user{"", un, p, 0}
 		createUser(&u)
 		c := createSessionCookie(u)
 		http.SetCookie(w, c)
@@ -69,17 +69,15 @@ func login(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/game", http.StatusSeeOther)
 	}
 	if r.Method == http.MethodPost {
-		email := r.FormValue("email")
+		un := r.FormValue("username")
 		p := r.FormValue("password")
-		u, err := readUserByName(email)
+		u, err := readUserByName(un)
 		if err != nil {
-			// http.Error(w, "Username and/or password do not match", http.StatusForbidden)
 			tpl.ExecuteTemplate(w, "index.html", true)
 			return
 		}
 		err = bcrypt.CompareHashAndPassword(u.Password, []byte(p))
 		if err != nil {
-			// http.Error(w, "Username and/or password do not match", http.StatusForbidden)
 			tpl.ExecuteTemplate(w, "index.html", true)
 			return
 		}

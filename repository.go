@@ -9,7 +9,7 @@ import (
 
 type user struct {
 	Id       string
-	Email    string
+	Username string
 	Password []byte
 	Balance  int
 }
@@ -53,7 +53,7 @@ func createUser(u *user) *user {
 }
 func readUserByName(n string) (*user, error) {
 	for _, u := range dbUsers {
-		if u.Email == n {
+		if u.Username == n {
 			return &u, nil
 		}
 	}
