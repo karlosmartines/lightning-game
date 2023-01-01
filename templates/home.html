@@ -9,38 +9,37 @@
 	</head>
 	<body>
 		<h1>Lightning Roulette</h1>
-		<h2>{{.}}</h2>
+		<h2>Game result: {{.Game.Result}}</h2>
+		<h2>Balance: {{.User.Balance}}</h2>
 		
 		<form action="/play" method="get">
 			<div class="form-check">
 				<input
-					class="form-check-input"
-					type="radio"
+					class="btn btn-primary"
+					type="submit"
 					name="bettype"
-					value="playeven"
-					id="flexRadioDefault1"
+					value="Even"
+					id="beteven"
 				/>
-				<label class="form-check-label" for="flexRadioDefault1">
+				<label class="form-check-label" for="playevenbutton">
 					Play even numbers
 				</label>
 			</div>
 			<div class="form-check">
-				<input
+				<input 
 					class="form-check-input"
-					type="radio"
+					type="submit"
 					name="bettype"
-					value="playodd"
-					id="flexRadioDefault1"
+					value="Odd"
+					id="betodd"
 				/>
-				<label class="form-check-label" for="flexRadioDefault1">
+				<label class="form-check-label" for="playoddbutton">
 					Play odd numbers
 				</label>
 			</div>
-			<button type="submit" class="btn btn-success">Play!</button>
 		</form>
 		<form action="/logout" method="get">
 			<button type="submit" class="btn btn-success">Log out</output></button>
-			</div>
 		</form>
 	</body>
 </html>

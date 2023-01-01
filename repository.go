@@ -14,12 +14,13 @@ type user struct {
 	Balance  int
 }
 
-/*type game struct {
-	User user
-	Bet string
-	result string
-
-}*/
+type game struct {
+	Id      string
+	User    string
+	Bet     int
+	EvenBet bool
+	Result  int
+}
 
 type appSession struct {
 	Id   string
@@ -28,6 +29,7 @@ type appSession struct {
 
 var dbUsers = map[string]user{}
 var dbSessions = map[string]appSession{}
+var dbGames = map[string]game{}
 
 func createSession(u user) *appSession {
 	s := appSession{

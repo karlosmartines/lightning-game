@@ -6,15 +6,41 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type templateData struct {
+	User *user
+	Game *game
+}
+
 func index(w http.ResponseWriter, r *http.Request) {
 	err := tpl.ExecuteTemplate(w, "index.html", "")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
-func game(w http.ResponseWriter, r *http.Request) {
+func home(w http.ResponseWriter, r *http.Request) {
 	if alreadyLoggedIn(r) {
-		err := tpl.ExecuteTemplate(w, "game.html", "")
+		uID, err := getSessionUser(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		u, err := readUser(uID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		g := game{
+			"",
+			"",
+			0,
+			false,
+			0,
+		}
+		td := templateData{
+			u,
+			&g,
+		}
+		err = tpl.ExecuteTemplate(w, "home.html", td)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -23,13 +49,30 @@ func game(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 func play(w http.ResponseWriter, r *http.Request) {
-	var victory bool
-	if r.FormValue("flexRadioDefault") == "playeven" {
-		victory = gameWon(true)
-	} else {
-		victory = gameWon(false)
+	var victorious bool
+	/*uID, err := getSessionUser(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	if victory {
+	u, err := readUser(uID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	g := game{
+		uuid.NewV4().String(),
+		u.Id,
+		0,
+		false,
+		0,
+	}*/
+	bettype := r.FormValue("bettype")
+	if bettype == "Even" {
+		victorious = gameWon(true)
+	} else if bettype == "Odd" {
+		victorious = gameWon(false)
+	}
+
+	if victorious {
 		displayGameResult(w, "You won!")
 	} else {
 		displayGameResult(w, "You lost!")
@@ -59,14 +102,14 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		createUser(&u)
 		c := createSessionCookie(u)
 		http.SetCookie(w, c)
-		http.Redirect(w, r, "/game", http.StatusSeeOther)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
 	}
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
 	if alreadyLoggedIn(r) {
-		http.Redirect(w, r, "/game", http.StatusSeeOther)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	}
 	if r.Method == http.MethodPost {
 		un := r.FormValue("username")
@@ -83,7 +126,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		}
 		c := createSessionCookie(*u)
 		http.SetCookie(w, c)
-		http.Redirect(w, r, "/game", http.StatusSeeOther)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 	}
 	tpl.ExecuteTemplate(w, "index.html", "")
 }

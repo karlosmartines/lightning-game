@@ -15,7 +15,7 @@ func main() {
 func startMux() {
 	http.HandleFunc("/", index)
 	http.Handle("/favicon.ico", http.NotFoundHandler())
-	http.HandleFunc("/game", game)
+	http.HandleFunc("/home", home)
 	http.HandleFunc("/play", play)
 	http.HandleFunc("/signup", signup)
 	http.HandleFunc("/login", login)
@@ -27,3 +27,7 @@ func init() {
 	bs, _ := bcrypt.GenerateFromPassword([]byte("asdf"), bcrypt.MinCost)
 	createUser(&user{"", "user1", bs, 0})
 }
+
+// TODO: Game repo and history
+// TODO: Transaction repo and functionality. Fund channel, bet money, recieve money, defund channel.
+// TODO:

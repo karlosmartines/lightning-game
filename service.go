@@ -7,6 +7,18 @@ import (
 	"time"
 )
 
+func getSessionUser(r *http.Request) (string, error) {
+	c, err := r.Cookie("session")
+	if err != nil {
+		return "", err
+	}
+	s, err := readSession(c.Value)
+	if err != nil {
+		return "", err
+	}
+	return s.User, nil
+}
+
 func alreadyLoggedIn(r *http.Request) bool {
 	c, err := r.Cookie("session")
 	if err != nil {
@@ -60,7 +72,7 @@ func createSessionCookie(u user) *http.Cookie {
 	}
 */
 func displayGameResult(w http.ResponseWriter, result string) {
-	err := tpl.ExecuteTemplate(w, "game.html", result)
+	err := tpl.ExecuteTemplate(w, "home.html", result)
 	if err != nil {
 		log.Fatalln(err)
 	}
