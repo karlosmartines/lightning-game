@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -68,14 +67,13 @@ func readUser(id string) (*user, error) {
 	}
 	return &u, nil
 }
-func updateUser(id string, u user) string {
+func updateUser(id string, u user) (string, error) {
 	_, ok := dbUsers[id]
 	if !ok {
-		log.Fatalln("Update user not ok")
-		return ""
+		return "", fmt.Errorf("Update user %s returned ok = %t", id, ok)
 	}
 	dbUsers[id] = u
-	return id
+	return id, nil
 }
 func deleteUser(id string) *user {
 	u, err := readUser(id)

@@ -107,6 +107,32 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func fundAccount(w http.ResponseWriter, r *http.Request) {
+	uID, err := getSessionUser(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	u, err := readUser(uID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	u.Balance = 1000
+	_, err = updateUser(uID, *u)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	nu, _ := readUser(uID)
+	g := emptyGame()
+	td := templateData{
+		nu,
+		g,
+	}
+	tpl.ExecuteTemplate(w, "home.html", td)
+}
+
 func login(w http.ResponseWriter, r *http.Request) {
 	if alreadyLoggedIn(r) {
 		http.Redirect(w, r, "/home", http.StatusSeeOther)

@@ -5,8 +5,19 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
 )
 
+func emptyGame() *game {
+	return &game{
+		uuid.NewV4().String(),
+		"",
+		0,
+		false,
+		0,
+	}
+}
 func getSessionUser(r *http.Request) (string, error) {
 	c, err := r.Cookie("session")
 	if err != nil {
