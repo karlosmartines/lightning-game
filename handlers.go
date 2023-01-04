@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -50,7 +51,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 func play(w http.ResponseWriter, r *http.Request) {
 	var victorious bool
-	/*uID, err := getSessionUser(r)
+	uID, err := getSessionUser(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -64,7 +65,15 @@ func play(w http.ResponseWriter, r *http.Request) {
 		0,
 		false,
 		0,
-	}*/
+	}
+	td := templateData{
+		u,
+		&g,
+	}
+	bs := r.FormValue("betsum")
+	if int(bs) > u.Balance {
+		tpl.ExecuteTemplate(w, "home.html")
+	}
 	bettype := r.FormValue("bettype")
 	if bettype == "Even" {
 		victorious = gameWon(true)

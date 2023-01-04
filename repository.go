@@ -42,7 +42,7 @@ func createSession(u user) *appSession {
 func readSession(sID string) (*appSession, error) {
 	s, ok := dbSessions[sID]
 	if !ok {
-		return nil, fmt.Errorf("Did not find session by id %s", s.Id)
+		return nil, fmt.Errorf("did not find session by id %s", s.Id)
 	}
 	return &s, nil
 }
@@ -58,19 +58,19 @@ func readUserByName(n string) (*user, error) {
 			return &u, nil
 		}
 	}
-	return nil, fmt.Errorf("Username %s not found", n)
+	return nil, fmt.Errorf("username %s not found", n)
 }
 func readUser(id string) (*user, error) {
 	u, ok := dbUsers[id]
 	if !ok {
-		return nil, fmt.Errorf("Did not find user by id %s", id)
+		return nil, fmt.Errorf("did not find user by id %s", id)
 	}
 	return &u, nil
 }
 func updateUser(id string, u user) (string, error) {
 	_, ok := dbUsers[id]
 	if !ok {
-		return "", fmt.Errorf("Update user %s returned ok = %t", id, ok)
+		return "", fmt.Errorf("update user %s returned ok = %t", id, ok)
 	}
 	dbUsers[id] = u
 	return id, nil
