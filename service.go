@@ -9,14 +9,18 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func emptyGame() *game {
-	return &game{
+func emptyGame(uID string) *game {
+	g := &game{
 		uuid.NewV4().String(),
 		"",
 		0,
 		false,
 		0,
 	}
+	if uID != "" {
+		g.User = uID
+	}
+	return g
 }
 func getSessionUser(r *http.Request) (string, error) {
 	c, err := r.Cookie("session")

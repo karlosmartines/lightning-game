@@ -2,8 +2,8 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
-	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -50,43 +50,43 @@ func home(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 func play(w http.ResponseWriter, r *http.Request) {
-	var victorious bool
 	uID, err := getSessionUser(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	u, err := readUser(uID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	g := game{
-		uuid.NewV4().String(),
-		u.Id,
-		0,
-		false,
-		0,
-	}
+	g := emptyGame(uID)
 	td := templateData{
 		u,
-		&g,
+		g,
 	}
-	bs := r.FormValue("betsum")
-	if int(bs) > u.Balance {
-		tpl.ExecuteTemplate(w, "home.html")
+	bs, _ := strconv.Atoi(r.FormValue("betsum"))
+	if bs > u.Balance || bs < 1 || u.Balance < 1 {
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
+		return
 	}
+	g.Bet = bs
 	bettype := r.FormValue("bettype")
 	if bettype == "Even" {
-		victorious = gameWon(true)
-	} else if bettype == "Odd" {
-		victorious = gameWon(false)
+		g.EvenBet = true
 	}
-
-	if victorious {
-		displayGameResult(w, "You won!")
+	if gameWon(td.Game.EvenBet) {
+		u.Balance += bs
+		g.Result = bs * 2
+		_, _ = updateUser(uID, *u)
 	} else {
-		displayGameResult(w, "You lost!")
+		u.Balance -= bs
+		g.Result = -bs * 2
+		_, _ = updateUser(uID, *u)
 	}
+	tpl.ExecuteTemplate(w, "home.html", td)
 }
+
 func signup(w http.ResponseWriter, r *http.Request) {
 	if alreadyLoggedIn(r) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -134,7 +134,7 @@ func fundAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	nu, _ := readUser(uID)
-	g := emptyGame()
+	g := emptyGame("")
 	td := templateData{
 		nu,
 		g,
